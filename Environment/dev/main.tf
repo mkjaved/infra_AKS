@@ -1,0 +1,91 @@
+module "g18_rg_module" {
+  source = "../../Module/ResourceGroup"
+  g18_rg = var.g18_rg
+}
+# module "g18_vnet_module" {
+#   source     = "../../Module/VNET"
+#   g18_vnet   = var.g18_vnet
+#   depends_on = [module.g18_rg_module]
+# }
+# module "g18_subnet_module" {
+#   source     = "../../Module/Subnet"
+#   g18_subnet = var.g18_subnet
+#   depends_on = [module.g18_vnet_module]
+
+# }
+module "g18_public_ip_module" {
+  source        = "../../Module/PublicIP"
+  g18_public_ip = var.g18_public_ip
+  depends_on    = [module.g18_rg_module]
+}
+module "g18_network_module" {
+  source      = "../../Module/Network"
+  g18_network = var.g18_network
+  depends_on  = [module.g18_rg_module]
+}
+# module "g18_stg_module" {
+#   source     = "../../Module/Storage"
+#   g18_stg    = var.g18_stg
+#   depends_on = [module.g18_network_module]
+# }
+# module "g18_kv" {
+#   source = "../../Module/KeyVault"
+#   g18_kv = var.g18_kv
+# }
+# module "g18_vml_module" {
+#   source       = "../../Module/VirtualMachineLinux"
+#   g18_vm_linux = var.g18_vm_linux
+#   depends_on   = [module.g18_network_module, module.g18_kv]
+# }
+# module "g18_vmw_module" {
+#   source        = "../../Module/VirtualMachineWindow"
+#   g18_vm_window = var.g18_vm_window
+#   depends_on    = [module.g18_nic_module]
+# }
+# module "g18_nsg_module" {
+#   source     = "../../Module/NSG"
+#   g18_nsg    = var.g18_nsg
+#   depends_on = [module.g18_rg_module]
+# }
+# module "g18_nisga_module" {
+#   source     = "../../Module/NISGA"
+#   g18_nisga  = var.g18_nisga
+#   depends_on = [module.g18_vml_module, module.g18_nsg_module]
+# }
+# module "g18_bastion" {
+#   source      = "../../Module/Bastion"
+#   g18_bastion = var.g18_bastion
+#   depends_on  = [module.g18_vnet_module, module.g18_subnet_module]
+# }
+# module "g18_server_module" {
+#   source     = "../../Module/Server"
+#   g18_server = var.g18_server
+#   depends_on = [module.g18_rg_module]
+# }
+# module "g18_db_module" {
+#   source     = "../../Module/Database"
+#   g18_db     = var.g18_db
+#   depends_on = [module.g18_server_module]
+# }
+module "g18_acr_module" {
+  source     = "../../Module/ACR"
+  g18_acr    = var.g18_acr
+  depends_on = [module.g18_rg_module]
+
+}
+module "g18_appgw_module" {
+  source     = "../../Module/APPGW"
+  g18_appgw  = var.g18_appgw
+  depends_on = [module.g18_network_module, module.g18_public_ip_module]
+}
+module "g18_aks_module" {
+  source     = "../../Module/AKS"
+  g18_aks    = var.g18_aks
+  depends_on = [module.g18_appgw_module]
+}
+module "g18_ra_module" {
+  source     = "../../Module/AKS_APPGW_Role_Assignment"
+  g18_ra     = var.g18_ra
+  depends_on = [module.g18_appgw_module, module.g18_aks_module, module.g18_acr_module]
+
+}
