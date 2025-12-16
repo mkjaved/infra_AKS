@@ -50,8 +50,6 @@ jobs:
     name: Terraform Apply
     runs-on: self-hosted
     needs: terraform-init-plan
-    if: github.ref == 'refs/heads/main'
-    environment: dev
 
     env:
       ARM_CLIENT_ID: 26f740e7-c9b8-4d24-a6a3-0b60f0c855c6
