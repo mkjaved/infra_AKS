@@ -2,70 +2,78 @@ name: "Dev Terraform Workflow"
 
 on:
   workflow_dispatch:
+
 permissions:
   id-token: write
   contents: read
-  
-jobs: 
+
+jobs:
   terraform-init-plan:
+    name: Terraform Init & Plan
     runs-on: self-hosted
-    steps: 
+
+    env:
+      ARM_CLIENT_ID: 26f740e7-c9b8-4d24-a6a3-0b60f0c855c6
+      ARM_TENANT_ID: cca32a50-2d76-45b8-8645-e5620a621055
+      ARM_SUBSCRIPTION_ID: 8b0422c9-d3b4-4ad5-b676-1cd162a61f87
+      ARM_USE_OIDC: true
+
+    steps:
       - name: Checkout
-        uses: actions/checkout@v5.0.0
-    
-      - name: Azure Login
-        uses: Azure/login@v2.3.0
+        uses: actions/checkout@v5
+
+      - name: Azure Login (OIDC)
+        uses: Azure/login@v2
         with:
           client-id: 26f740e7-c9b8-4d24-a6a3-0b60f0c855c6
           tenant-id: cca32a50-2d76-45b8-8645-e5620a621055
           subscription-id: 8b0422c9-d3b4-4ad5-b676-1cd162a61f87
-            
-      - name: Terraform fmt
-        id: fmt
+
+      - name: Terraform Format
         run: terraform fmt -check
-        continue-on-error: true
         working-directory: Environment/dev
-        
+        continue-on-error: true
+
       - name: Terraform Init
-        id: init
-        run: terraform init -input=false  
+        run: terraform init -input=false
         working-directory: Environment/dev
 
       - name: Terraform Validate
-        id: validate
         run: terraform validate -no-color
-        working-directory: Environment/dev        
-      
+        working-directory: Environment/dev
+
       - name: Terraform Plan
-        id: plan
         run: terraform plan -no-color -input=false
-        continue-on-error: true
-        working-directory: Environment/dev    
-        
-  terraform-apply:    
+        working-directory: Environment/dev
+
+  terraform-apply:
+    name: Terraform Apply
     runs-on: self-hosted
-    if: github.ref == 'refs/heads/main'
     needs: terraform-init-plan
+    if: github.ref == 'refs/heads/main'
     environment: dev
+
+    env:
+      ARM_CLIENT_ID: 26f740e7-c9b8-4d24-a6a3-0b60f0c855c6
+      ARM_TENANT_ID: cca32a50-2d76-45b8-8645-e5620a621055
+      ARM_SUBSCRIPTION_ID: 8b0422c9-d3b4-4ad5-b676-1cd162a61f87
+      ARM_USE_OIDC: true
+
     steps:
       - name: Checkout
-        uses: actions/checkout@v5.0.0
-    
-      - name: Azure Login
-        uses: Azure/login@v2.3.0
+        uses: actions/checkout@v5
+
+      - name: Azure Login (OIDC)
+        uses: Azure/login@v2
         with:
           client-id: 26f740e7-c9b8-4d24-a6a3-0b60f0c855c6
           tenant-id: cca32a50-2d76-45b8-8645-e5620a621055
-          subscription-id: 8b0422c9-d3b4-4ad5-b676-1cd162a61f87   
-          
+          subscription-id: 8b0422c9-d3b4-4ad5-b676-1cd162a61f87
+
       - name: Terraform Init
-        id: init
-        run: terraform init -input=false  
+        run: terraform init -input=false
         working-directory: Environment/dev
 
       - name: Terraform Apply
-        id: apply
-        run: terraform apply --auto-approve
-        continue-on-error: true
-        working-directory: Environment/dev              
-          
+        run: terraform apply -auto-approve
+        working-directory: Environment/dev
